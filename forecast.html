@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+
+
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Weather Forecast</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+    <style>
+        .table-container {
+            max-height: 400px;
+            /* Limit height for overflow */
+            overflow-y: auto;
+            /* Enable vertical scrolling */
+        }
+
+        /* Custom Gradient Backgrounds */
+        .bg-gradient-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+
+        .bg-gradient-card {
+            background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
+        }
+
+        .bg-gradient-btn {
+            background: linear-gradient(135deg, #36d1dc 0%, #5b86e5 100%);
+        }
+
+        /* Mobile Sidebar Styling */
+        #sidebar {
+            transition: transform 0.3s ease-in-out;
+            transform: translateX(-100%); /* Hidden by default */
+        }
+
+        #sidebar.open {
+            transform: translateX(0); /* Show the sidebar */
+        }
+
+        /* Ensure the sidebar is hidden on mobile initially */
+        @media (min-width: 768px) {
+            #sidebar {
+                transform: translateX(0); /* Show sidebar on larger screens */
+            }
+        }
+    </style>
+</head>
+
+<body class="bg-gray-100">
+    <!-- Mobile Hamburger Menu -->
+    <header class="flex justify-between items-center bg-gradient-header text-white p-4 md:hidden">
+        <h2 class="text-2xl font-bold">Weather App</h2>
+        <button id="menu-toggle" class="text-white focus:outline-none">
+            <i class="fas fa-bars text-2xl"></i>
+        </button>
+    </header>
+
+    <div class="flex flex-col md:flex-row h-screen">
+        <div id="sidebar"
+            class="fixed top-0 left-0 w-64 h-full bg-gradient-header text-white p-4 mobile-menu md:relative md:translate-x-0">
+            <button id="close-sidebar" class="text-white absolute top-4 right-4 md:hidden">
+                <i class="fas fa-times text-xl"></i>
+            </button>
+            <!-- Profile Icon -->
+            <div class="flex items-center mb-6">
+                <img src="assets/image.png" alt="Profile" class="rounded-full w-10 h-10 mr-3" />
+                <h3 class="text-xl font-bold">Weather App</h3>
+            </div>
+
+            <nav>
+                <ul class="space-y-4">
+                    <li>
+                        <a href="index.html"
+                            class="block p-3 bg-gradient-btn rounded text-center text-white font-semibold hover:bg-blue-600 transition">Dashboard</a>
+                    </li>
+                    <li>
+                        <a href="forecast.html"
+                            class="block p-3 bg-gradient-btn rounded text-center text-white font-semibold hover:bg-blue-600 transition">Forecast</a>
+                    </li>
+                </ul>
+            </nav>
+        </div>
+
+        <!-- Main Content -->
+        <div class="w-full md:w-4/5 p-4 md:p-8 bg-gradient-to-r from-gray-100 to-gray-200 flex flex-col md:flex-row">
+            <!-- Forecast Table Section -->
+            <div class="w-full md:w-2/3 p-4">
+                <h2 class="text-2xl font-bold mb-4 text-gray-800">5-Day Weather Forecast</h2>
+                <input id="city-input" type="text" placeholder="Search city..."
+                    class="p-4 border border-gray-300 rounded-lg w-full focus:outline-none focus:ring-2 focus:ring-blue-400 shadow-sm mb-4">
+                <button id="get-forecast-btn"
+                    class="p-4 bg-gradient-btn text-white rounded-lg shadow-lg hover:bg-blue-500 transition w-full mb-4">Get
+                    Forecast</button>
+
+                <div class="table-container bg-white rounded-lg shadow-lg p-6">
+                    <table class="min-w-full">
+                        <thead>
+                            <tr class="bg-gray-200 text-gray-700 text-left">
+                                <th class="px-4 py-2 font-semibold">Date</th>
+                                <th class="px-4 py-2 font-semibold">Temperature (°C)</th>
+                                <th class="px-4 py-2 font-semibold">Condition</th>
+                            </tr>
+                        </thead>
+                        <tbody id="forecast-table-body">
+                            <!-- Forecast data will be dynamically injected here -->
+                        </tbody>
+                    </table>
+                </div>
+
+                <div id="pagination" class="flex justify-between mt-6">
+                    <button id="prev-page"
+                        class="p-3 bg-gradient-btn text-white rounded-lg shadow-lg hover:bg-blue-500 transition"
+                        disabled>Previous</button>
+                    <button id="next-page"
+                        class="p-3 bg-gradient-btn text-white rounded-lg shadow-lg hover:bg-blue-500 transition">Next</button>
+                </div>
+            </div>
+            <!-- Chatbot Section -->
+            <div class="w-full sm:w-1/3 p-4">
+                <h2 class="text-2xl font-bold mb-4 text-gray-800">Chatbot</h2>
+                <div id="chatbot" class="bg-white rounded-lg shadow-lg p-6 h-full flex flex-col">
+                    <div id="chat-window" class="flex-1 overflow-y-auto mb-4 text-gray-700">
+                        <!-- Chat messages will be dynamically injected here -->
+                    </div>
+                    <input id="user-input" type="text" placeholder="Ask me anything..."
+                        class="p-4 border border-gray-300 rounded-lg shadow-sm w-full focus:outline-none focus:ring-2 focus:ring-blue-400">
+                    <button id="send-message-btn"
+                        class="p-4 mt-4 bg-gradient-btn text-white rounded-lg shadow-lg hover:bg-blue-500 transition">Send</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- JavaScript to toggle mobile sidebar -->
+    <script>
+        const menuToggle = document.getElementById('menu-toggle');
+        const sidebar = document.getElementById('sidebar');
+        const closeSidebar = document.getElementById('close-sidebar');
+
+        // Open sidebar on mobile
+        menuToggle.addEventListener('click', () => {
+            sidebar.classList.add('open');
+        });
+
+        // Close sidebar on mobile
+        closeSidebar.addEventListener('click', () => {
+            sidebar.classList.remove('open');
+        });
+    </script>
+
+    <!-- Link to External JavaScript File -->
+    <script src="forecast.js"></script>
+</body>
+
+</html>
