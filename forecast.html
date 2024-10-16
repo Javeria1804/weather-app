@@ -34,17 +34,20 @@
         /* Mobile Sidebar Styling */
         #sidebar {
             transition: transform 0.3s ease-in-out;
-            transform: translateX(-100%); /* Hidden by default */
+            transform: translateX(-100%);
+            /* Hidden by default */
         }
 
         #sidebar.open {
-            transform: translateX(0); /* Show the sidebar */
+            transform: translateX(0);
+            /* Show the sidebar */
         }
 
         /* Ensure the sidebar is hidden on mobile initially */
         @media (min-width: 768px) {
             #sidebar {
-                transform: translateX(0); /* Show sidebar on larger screens */
+                transform: translateX(0);
+                /* Show sidebar on larger screens */
             }
         }
     </style>
@@ -110,6 +113,24 @@
                         </tbody>
                     </table>
                 </div>
+
+                <!-- Buttons for Sorting and Filtering -->
+                <div class="grid grid-cols-1 gap-4 m-6 sm:grid-cols-2 md:grid-cols-4">
+                    <button id="sort-ascending-btn"
+                        class="p-3 bg-gradient-btn text-white rounded-lg shadow-lg hover:bg-blue-500 transition">Sort
+                        Ascending</button>
+                    <button id="sort-descending-btn"
+                        class="p-3 bg-gradient-btn text-white rounded-lg shadow-lg hover:bg-blue-500 transition">Sort
+                        Descending</button>
+                    <button id="filter-rain-btn"
+                        class="p-3 bg-gradient-btn text-white rounded-lg shadow-lg hover:bg-blue-500 transition">Filter
+                        Rainy Days</button>
+                    <button id="highest-temp-btn"
+                        class="p-3 bg-gradient-btn text-white rounded-lg shadow-lg hover:bg-blue-500 transition">Highest
+                        Temp</button>
+                </div>
+
+
 
                 <div id="pagination" class="flex justify-between mt-6">
                     <button id="prev-page"

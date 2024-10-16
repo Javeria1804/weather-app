@@ -179,4 +179,55 @@ async function getChatbotResponse(message) {
         addMessageToChat('Chatbot', 'Sorry, an error occurred while connecting to the chatbot.');
     }
 }
+// DOM elements for buttons
+const sortAscendingBtn = document.getElementById('sort-ascending-btn');
+const sortDescendingBtn = document.getElementById('sort-descending-btn');
+const filterRainBtn = document.getElementById('filter-rain-btn');
+const highestTempBtn = document.getElementById('highest-temp-btn');
 
+// Event Listener: Sort temperatures in ascending order
+sortAscendingBtn.addEventListener('click', () => {
+    forecastData.sort((a, b) => a.main.temp - b.main.temp);
+    displayForecast();
+});
+
+// Event Listener: Sort temperatures in descending order
+sortDescendingBtn.addEventListener('click', () => {
+    forecastData.sort((a, b) => b.main.temp - a.main.temp);
+    displayForecast();
+});
+
+// Event Listener: Filter out days without rain
+filterRainBtn.addEventListener('click', () => {
+    const rainyDays = forecastData.filter(entry => entry.weather[0].description.includes('rain'));
+    displayFilteredForecast(rainyDays);
+});
+
+// Event Listener: Show the day with the highest temperature
+highestTempBtn.addEventListener('click', () => {
+    const highestTempDay = forecastData.reduce((prev, current) => {
+        return (prev.main.temp > current.main.temp) ? prev : current;
+    });
+    displayFilteredForecast([highestTempDay]);
+});
+
+// Function to display filtered forecast data
+function displayFilteredForecast(filteredData) {
+    // Clear existing data
+    forecastTableBody.innerHTML = '';
+
+    filteredData.forEach(entry => {
+        const date = new Date(entry.dt_txt).toLocaleDateString();
+        const temp = entry.main.temp;
+        const condition = entry.weather[0].description;
+
+        const row = `
+            <tr>
+                <td class="px-4 py-2">${date}</td>
+                <td class="px-4 py-2">${temp} °C</td>
+                <td class="px-4 py-2 capitalize">${condition}</td>
+            </tr>
+        `;
+        forecastTableBody.innerHTML += row;
+    });
+}
