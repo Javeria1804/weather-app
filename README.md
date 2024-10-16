@@ -97,7 +97,3 @@ weather-chat-bot/
 ## License
 
 This project is licensed under the **MIT License**. See the `LICENSE` file for more information.
-
----
-
-This refactor provides clearer structure, maintains readability, and rephrases certain aspects to ensure the README is both professional and developer-friendly.
