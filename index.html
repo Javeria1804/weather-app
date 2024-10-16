@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Weather Dashboard</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        /* Custom background gradient and other design elements */
+        .weather-background {
+            background: linear-gradient(135deg, rgba(255, 204, 128, 1) 0%, rgba(255, 159, 64, 1) 100%);
+            background-size: cover;
+            background-position: center;
+            transition: background 0.5s ease;
+        }
+
+        .loading-spinner {
+            border-top-color: transparent;
+        }
+
+        .loading {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100%;
+        }
+
+        /* Style buttons with a soft gradient */
+        .btn-gradient {
+            background: linear-gradient(90deg, rgba(251, 113, 133, 1) 0%, rgba(244, 67, 54, 1) 100%);
+            color: white;
+            transition: all 0.3s ease;
+        }
+
+        .btn-gradient:hover {
+            background: linear-gradient(90deg, rgba(244, 67, 54, 1) 0%, rgba(229, 57, 53, 1) 100%);
+        }
+
+        /* Soft card shadow */
+        .card-shadow {
+            box-shadow: 0 10px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Add spinner for loading state */
+        .spinner-border {
+            border: 4px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top: 4px solid #fff;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+
+        /* Mobile Sidebar Styling */
+        #sidebar {
+            transition: transform 0.3s ease-in-out;
+            transform: translateX(-100%); /* Hidden by default */
+        }
+
+        #sidebar.open {
+            transform: translateX(0); /* Show the sidebar */
+        }
+    </style>
+</head>
+
+<body class="bg-gradient-to-r from-blue-50 to-indigo-100">
+    <header class="flex justify-between items-center bg-gradient-to-b from-yellow-600 to-yellow-700 text-white p-4 md:hidden">
+        <a href="index.html">
+            <h1 class="text-3xl font-bold tracking-wide">Weather App</h1>
+        </a>
+        <button id="menu-toggle" class="text-white focus:outline-none">
+            <i class="fas fa-bars text-2xl"></i>
+        </button>
+    </header>
+
+    <div class="flex h-screen">
+        <!-- Desktop Sidebar -->
+        <div class="hidden md:flex md:flex-col md:w-64 bg-gradient-to-b from-yellow-600 to-yellow-700 text-white p-6">
+            <a href="index.html">
+                <h1 class="text-3xl font-bold tracking-wide">Weather App</h1>
+            </a>
+            <nav class="mt-10">
+                <ul>
+                    <li class="p-4 hover:bg-yellow-800 cursor-pointer transition-all rounded-md"><a href="index.html">Dashboard</a></li>
+                    <li class="p-4 hover:bg-yellow-800 cursor-pointer transition-all rounded-md"><a href="chatbot.html">Chatbot</a></li>
+                </ul>
+            </nav>
+        </div>
+
+        <!-- Mobile Sidebar -->
+        <div id="sidebar" class="fixed top-0 left-0 w-64 h-full bg-gradient-to-b from-yellow-600 to-yellow-700 text-white p-6 mobile-menu md:hidden">
+            <button id="close-sidebar" class="text-white absolute top-4 right-4">
+                <i class="fas fa-times text-xl"></i>
+            </button>
+            <!-- Profile Icon -->
+            <div class="flex items-center mb-6">
+                <img src="assets/avatar.webp" alt="Profile" class="rounded-full w-10 h-10 mr-3">
+                <h3 class="text-xl font-bold">Weather App</h3>
+            </div>
+
+            <nav class="mt-10">
+                <ul>
+                    <li class="p-4 hover:bg-yellow-800 cursor-pointer transition-all rounded-md"><a href="index.html">Dashboard</a></li>
+                    <li class="p-4 hover:bg-yellow-800 cursor-pointer transition-all rounded-md"><a href="chatbot.html">Chatbot</a></li>
+                </ul>
+            </nav>
+        </div>
+
+        <!-- Main Content -->
+        <div class="flex-1 p-6 md:p-8">
+            <!-- Search Bar -->
+            <div class="flex flex-col md:flex-row justify-between items-center mb-6 space-y-4 md:space-y-0">
+                <input id="cityInput" class="border p-3 w-full md:w-2/3 rounded-lg shadow-md focus:outline-none focus:ring-2 focus:ring-yellow-400" type="text" placeholder="Enter city name..." aria-label="City name input">
+                <button id="searchBtn" class="btn-gradient p-3 rounded-lg shadow-md focus:outline-none focus:ring-2 focus:ring-yellow-400 w-full md:w-auto">Get Weather</button>
+                <!-- Avatar Placeholder -->
+                <div class="hidden sm:flex items-center">
+                    <img src="assets/avatar.webp" alt="User Avatar" class="w-12 h-12 md:w-14 md:h-14 rounded-full border-2 border-yellow-400 shadow-sm cursor-pointer" title="User Profile">
+                </div>
+            </div>
+
+             <!-- Weather Data Widget -->
+             <div id="weatherWidget" class="bg-white shadow-lg rounded-lg p-6 mb-6 weather-background card-shadow">
+                <h2 id="cityName" class="text-2xl font-bold mb-2 hidden text-gray-700">Enter a City Name...</h2>
+                <img id="weatherIcon" src="" alt="Weather Icon" class="w-16 h-16 mb-2 hidden">
+                <p id="weatherCondition" class="text-lg hidden text-gray-600">Weather Condition</p>
+                <p id="temperature" class="text-xl font-bold hidden text-gray-800">Temperature</p>
+                <!-- Loading Spinner -->
+                <div id="loading" class="hidden text-center">
+                    <div class="spinner-border"></div>
+                </div>
+            </div>
+
+            <!-- Charts -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <!-- Vertical Bar Chart -->
+                <div class="bg-white shadow-lg rounded-lg p-6 card-shadow">
+                    <canvas id="tempBarChart"></canvas>
+                </div>
+
+                <!-- Doughnut Chart -->
+                <div class="bg-white shadow-lg rounded-lg p-6 card-shadow">
+                    <canvas id="weatherDoughnutChart"></canvas>
+                </div>
+
+                <!-- Line Chart -->
+                <div class="bg-white shadow-lg rounded-lg p-6 card-shadow">
+                    <canvas id="tempLineChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="weather-dashboard.js"></script>
+
+    <!-- JavaScript to toggle mobile sidebar -->
+    <script>
+        const menuToggle = document.getElementById("menu-toggle");
+        const sidebar = document.getElementById("sidebar");
+        const closeSidebar = document.getElementById("close-sidebar");
+
+        // Open sidebar on mobile
+        menuToggle.addEventListener("click", () => {
+            sidebar.classList.add("open");
+        });
+
+        // Close sidebar on mobile
+        closeSidebar.addEventListener("click", () => {
+            sidebar.classList.remove("open");
+        });
+    </script>
+</body>
+
+</html>
