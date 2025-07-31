@@ -1,0 +1,718 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>WeatherVibe - Beautiful Weather Dashboard</title>
+    <link rel="stylesheet" href="styles.css" />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+    />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+    <script src="https://unpkg.com/@lottiefiles/lottie-player@latest/dist/lottie-player.js"></script>
+  </head>
+  <body>
+    <div id="weather-background"></div>
+    
+    <!-- Mobile Hamburger Menu -->
+    <button class="mobile-menu-toggle" onclick="toggleMobileSidebar()">
+      <span></span>
+      <span></span>
+      <span></span>
+    </button>
+    
+    <!-- Mobile Overlay -->
+    <div class="mobile-overlay" onclick="toggleMobileSidebar()"></div>
+    
+    <div class="container">
+      <!-- Sidebar -->
+      <div class="sidebar" id="sidebar">
+        <button class="sidebar-toggle" onclick="toggleSidebar()">
+          <i class="fas fa-chevron-left"></i>
+        </button>
+
+        <div class="app-logo">
+          <i class="fas fa-cloud-sun"></i>
+          <h1>WeatherVibe</h1>
+        </div>
+
+        <nav>
+          <ul class="nav-menu">
+            <li class="nav-item">
+              <a href="#" class="nav-link active" data-page="dashboard">
+                <i class="fas fa-home"></i>
+                <span>Dashboard</span>
+              </a>
+            </li>
+            <li class="nav-item">
+              <a href="#" class="nav-link" data-page="locations">
+                <i class="fas fa-map-marker-alt"></i>
+                <span>Locations</span>
+              </a>
+            </li>
+            <li class="nav-item">
+              <a href="#" class="nav-link" data-page="analytics">
+                <i class="fas fa-chart-line"></i>
+                <span>Analytics</span>
+              </a>
+            </li>
+            <li class="nav-item">
+              <a href="#" class="nav-link" data-page="settings">
+                <i class="fas fa-cog"></i>
+                <span>Settings</span>
+              </a>
+            </li>
+          </ul>
+        </nav>
+      </div>
+
+      <!-- Main Content -->
+      <div class="main-content">
+        <!-- Dashboard Content -->
+        <div id="dashboard-content" class="page-content">
+          <!-- Search Bar -->
+          <div class="search-container">
+            <div class="search-wrapper">
+              <input
+                type="text"
+                class="search-input"
+                id="city-search"
+                placeholder="Search for a city..."
+                autocomplete="on"
+              />
+            </div>
+          </div>
+
+          <!-- Current Weather -->
+          <div class="current-weather fade-in" id="current-weather">
+            <div class="weather-background" id="weather-background"></div>
+            <div class="weather-content">
+              <div class="weather-info">
+                <div class="location">
+                  <i class="fas fa-map-marker-alt"></i>
+                  <span id="current-location">New York, NY</span>
+                </div>
+                <button
+                  class="favorite-btn"
+                  id="favorite-btn"
+                  onclick="toggleCurrentFavorite()"
+                  title="Add to favorites"
+                  style="position: absolute; top: 1rem; right: 1rem; z-index: 3;"
+                >
+                  <i class="far fa-heart" id="favorite-icon"></i>
+                </button>
+                <div class="local-time">
+                  <i class="fas fa-clock"></i>
+                  <span id="local-time">--:-- --</span>
+                </div>
+                <div class="temperature" id="current-temp">22°C</div>
+                <div class="weather-description" id="weather-description">
+                  Partly Cloudy
+                </div>
+                <div class="feels-like-container">
+                  Feels like <span id="feels-like">--°C</span>
+                </div>
+              </div>
+              <div class="weather-animation">
+                <lottie-player
+                  id="weather-animation"
+                  src=""
+                  background="transparent"
+                  speed="1"
+                  style="width: 150px; height: 150px;"
+                  loop
+                  autoplay>
+                </lottie-player>
+                <!-- Fallback static icon -->
+                <img
+                  id="current-weather-icon"
+                  src="https://openweathermap.org/img/wn/01d@2x.png"
+                  alt="Weather icon"
+                  style="width: 150px; height: 150px; display: none;"
+                />
+              </div>
+            </div>
+          </div>
+
+          <!-- Weather Details Grid -->
+          <div class="weather-details fade-in">
+            <div class="detail-card">
+              <i class="fas fa-sun uv"></i>
+              <h3>UV Index</h3>
+              <div class="value" id="uvIndex">6</div>
+              <canvas id="uv-chart" class="mini-chart"></canvas>
+            </div>
+            <div class="detail-card">
+              <i class="fas fa-tint humidity"></i>
+              <h3>Humidity</h3>
+              <div class="value" id="humidity">65%</div>
+              <canvas id="humidity-chart" class="mini-chart"></canvas>
+            </div>
+            <div class="detail-card">
+              <i class="fas fa-wind wind"></i>
+              <h3>Wind Speed</h3>
+              <div class="value" id="wind-speed">15 km/h</div>
+              <canvas id="wind-chart" class="mini-chart"></canvas>
+            </div>
+            <div class="detail-card">
+              <i class="fas fa-eye"></i>
+              <h3>Visibility</h3>
+              <div class="value" id="visibility">10 km</div>
+              <canvas id="visibility-chart" class="mini-chart"></canvas>
+            </div>
+            <div class="detail-card">
+              <i class="fas fa-thermometer-half pressure"></i>
+              <h3>Pressure</h3>
+              <div class="value" id="pressure">1013 hPa</div>
+              <canvas id="pressure-chart" class="mini-chart"></canvas>
+            </div>
+          </div>
+          
+          
+          
+          <!-- Additional Features Section -->
+          <div id="additional-features" class="fade-in">
+            <!-- Air Quality Section -->
+            <div class="favorites-section" style="margin-bottom: 2rem">
+              <div class="favorites-header">
+                <h2 class="favorites-title">Air Quality</h2>
+              </div>
+              <div
+                id="air-quality"
+                style="
+                  display: grid;
+                  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+                  gap: 1rem;
+                "
+              >
+                <div class="detail-card">
+                  <h3>AQI</h3>
+                  <div class="aqi-value value">--</div>
+                  <div
+                    class="aqi-status"
+                    style="font-size: 0.8rem; margin-top: 0.5rem"
+                  >
+                    --
+                  </div>
+                </div>
+                <div class="detail-card">
+                  <h3>PM2.5</h3>
+                  <div class="value" id="pm25">-- μg/m³</div>
+                </div>
+                <div class="detail-card">
+                  <h3>PM10</h3>
+                  <div class="value" id="pm10">-- μg/m³</div>
+                </div>
+                <div class="detail-card">
+                  <h3>O3</h3>
+                  <div class="value" id="o3">-- μg/m³</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Quick Map Widget -->
+          <div class="quick-map-section fade-in" style="margin-bottom: 2rem;">
+            <div class="favorites-header">
+              <h2 class="favorites-title">Quick Location Picker</h2>
+              <div style="display: flex; align-items: center; gap: 1rem;">
+                <p style="color: white; font-size: 0.9rem; margin: 0; text-shadow: 2px 2px 6px rgba(0, 0, 0, 0.8);">
+                  Click anywhere on the map to get weather for that location
+                </p>
+                <button onclick="weatherDashboard.initializeQuickMap()" 
+                        style="background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.3); color: white; padding: 0.3rem 0.6rem; border-radius: 5px; font-size: 0.8rem; cursor: pointer;"
+                        title="Reload map if not showing">
+                  🔄 Reload Map
+                </button>
+              </div>
+            </div>
+            <div class="quick-map-container">
+              <div id="quickMap" style="height: 300px; border-radius: 15px; overflow: hidden;"></div>
+            </div>
+          </div>
+          
+          <!-- Forecast Section -->
+          <div class="forecast-section fade-in">
+            <div class="forecast-header">
+              <h2 class="forecast-title">Weather Forecast</h2>
+              <div class="forecast-tabs">
+                <button
+                  class="forecast-tab active"
+                  id="daily-btn"
+                  onclick="switchForecast('daily')"
+                >
+                  10 Days
+                </button>
+                <button
+                  class="forecast-tab"
+                  id="hourly-btn"
+                  onclick="switchForecast('hourly')"
+                >
+                  24 Hours
+                </button>
+              </div>
+            </div>
+
+            <!-- Daily Forecast Container -->
+            <div id="daily-forecast-container" class="forecast-container">
+              <button class="forecast-nav-btn left" id="forecast-prev">
+                <i class="fas fa-chevron-left"></i>
+              </button>
+              <div class="forecast-scroll" id="daily-forecast">
+                <!-- Daily forecast will be populated by JavaScript -->
+              </div>
+              <button class="forecast-nav-btn right" id="forecast-next">
+                <i class="fas fa-chevron-right"></i>
+              </button>
+            </div>
+
+            <!-- Hourly Forecast Container -->
+            <div
+              id="hourly-forecast-container"
+              class="forecast-container hidden"
+            >
+              <button class="forecast-nav-btn left" id="hourly-forecast-prev">
+                <i class="fas fa-chevron-left"></i>
+              </button>
+              <div class="forecast-scroll" id="hourly-forecast">
+                <!-- Hourly forecast will be populated by JavaScript -->
+              </div>
+              <button class="forecast-nav-btn right" id="hourly-forecast-next">
+                <i class="fas fa-chevron-right"></i>
+              </button>
+            </div>
+          </div>
+
+          <!-- Map Section -->
+          <div
+            class="map-section fade-in"
+            id="mapSection"
+            style="display: none"
+          >
+            <div class="map-header">
+              <h2 class="map-title">Interactive Weather Map</h2>
+              <button class="close-map" onclick="toggleMap()">
+                <i class="fas fa-times"></i>
+              </button>
+            </div>
+            <div class="map-container">
+              <div id="weatherMap"></div>
+            </div>
+          </div>
+
+          <!-- Loading and Error States -->
+          <div
+            id="loading"
+            style="
+              display: none;
+              position: fixed;
+              top: 0;
+              left: 0;
+              width: 100%;
+              height: 100%;
+              background: rgba(0, 0, 0, 0.5);
+              z-index: 9999;
+              justify-content: center;
+              align-items: center;
+            "
+          >
+            <div
+              style="
+                background: white;
+                padding: 2rem;
+                border-radius: 10px;
+                text-align: center;
+              "
+            >
+              <div style="margin-bottom: 1rem; font-size: 2rem">⏳</div>
+              <div>Loading weather data...</div>
+            </div>
+          </div>
+
+          <div
+            id="error-section"
+            style="
+              display: none;
+              position: fixed;
+              top: 0;
+              left: 0;
+              width: 100%;
+              height: 100%;
+              background: rgba(255, 0, 0, 0.1);
+              z-index: 9998;
+              justify-content: center;
+              align-items: center;
+            "
+          >
+            <div
+              style="
+                background: white;
+                padding: 2rem;
+                border-radius: 10px;
+                text-align: center;
+                border: 2px solid #ff6b6b;
+              "
+            >
+              <div style="margin-bottom: 1rem; font-size: 2rem; color: #ff6b6b">
+                ❌
+              </div>
+              <div
+                id="error-message"
+                style="color: #ff6b6b; margin-bottom: 1rem"
+              >
+                An error occurred
+              </div>
+              <button
+                id="retry-btn"
+                onclick="document.getElementById('error-section').style.display = 'none'"
+                style="
+                  background: #ff6b6b;
+                  color: white;
+                  border: none;
+                  padding: 0.5rem 1rem;
+                  border-radius: 5px;
+                  cursor: pointer;
+                "
+              >
+                Retry
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Analytics Content -->
+        <div id="analytics-content" class="page-content hidden">
+          <div class="analytics-header">
+            <h1 style="color: white; margin-bottom: 2rem">Weather Analytics</h1>
+          </div>
+
+          <!-- Main Charts Section -->
+          <div class="charts-section fade-in">
+            <div class="charts-header">
+              <h2 class="charts-title">Temperature Trends</h2>
+            </div>
+            <div class="chart-container">
+              <canvas id="temperatureChart"></canvas>
+            </div>
+          </div>
+
+          <!-- Secondary Charts Grid -->
+          <div
+            style="
+              display: grid;
+              grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+              gap: 2rem;
+              margin-bottom: 2rem;
+            "
+          >
+            <!-- Humidity Chart -->
+            <div class="charts-section fade-in">
+              <div class="charts-header">
+                <h2 class="charts-title">Humidity Analysis</h2>
+              </div>
+              <div class="chart-container" style="height: 300px">
+                <canvas id="humidityChart"></canvas>
+              </div>
+            </div>
+
+            <!-- Pressure Chart -->
+            <div class="charts-section fade-in">
+              <div class="charts-header">
+                <h2 class="charts-title">Pressure Trends</h2>
+              </div>
+              <div class="chart-container" style="height: 300px">
+                <canvas id="pressureChart"></canvas>
+              </div>
+            </div>
+          </div>
+
+          <!-- Wind and Weather Conditions -->
+          <div
+            style="
+              display: grid;
+              grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+              gap: 2rem;
+            "
+          >
+            <!-- Wind Analysis -->
+            <div class="charts-section fade-in">
+              <div class="charts-header">
+                <h2 class="charts-title">Wind Analysis</h2>
+              </div>
+              <div class="chart-container" style="height: 300px">
+                <canvas id="windChart"></canvas>
+              </div>
+            </div>
+
+            <!-- UV Index & Visibility -->
+            <div class="charts-section fade-in">
+              <div class="charts-header">
+                <h2 class="charts-title">UV Index & Visibility</h2>
+              </div>
+              <div class="chart-container" style="height: 300px">
+                <canvas id="uvVisibilityChart"></canvas>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Locations Content -->
+        <div id="locations-content" class="page-content hidden">
+          <div class="locations-header">
+            <h1 style="color: white; margin-bottom: 2rem">Favorite Locations</h1>
+            <button class="add-location-btn" id="add-location-btn">
+              <i class="fas fa-plus"></i>
+              <span>Add Location</span>
+            </button>
+          </div>
+
+          <!-- Favorite Locations Grid -->
+          <div class="favorites-section fade-in">
+            <div class="locations-grid" id="favorites-locations">
+              <!-- Favorite cards will be populated by JavaScript -->
+            </div>
+          </div>
+        </div>
+
+        <!-- Settings Content -->
+        <div id="settings-content" class="page-content hidden">
+          <div class="settings-header">
+            <h1 style="color: white; margin-bottom: 2rem">Settings</h1>
+          </div>
+
+          <!-- Settings Sections -->
+          <div class="settings-grid">
+            <!-- Units Settings -->
+            <div class="settings-section fade-in">
+              <div class="settings-header-section">
+                <h2 class="settings-title">
+                  <i class="fas fa-thermometer-half"></i>
+                  Temperature Units
+                </h2>
+              </div>
+              <div class="settings-content-section">
+                <div class="setting-item">
+                  <label class="setting-label">
+                    <input
+                      type="radio"
+                      name="tempUnit"
+                      value="metric"
+                      checked
+                    />
+                    <span class="radio-custom"></span>
+                    Celsius (°C)
+                  </label>
+                </div>
+                <div class="setting-item">
+                  <label class="setting-label">
+                    <input type="radio" name="tempUnit" value="imperial" />
+                    <span class="radio-custom"></span>
+                    Fahrenheit (°F)
+                  </label>
+                </div>
+              </div>
+            </div>
+
+            <!-- Theme Settings -->
+            <div class="settings-section fade-in">
+              <div class="settings-header-section">
+                <h2 class="settings-title">
+                  <i class="fas fa-palette"></i>
+                  Theme
+                </h2>
+              </div>
+              <div class="settings-content-section">
+                <div class="setting-item">
+                  <label class="setting-label">
+                    <input type="radio" name="theme" value="auto" checked />
+                    <span class="radio-custom"></span>
+                    Auto (Based on time)
+                  </label>
+                </div>
+                <div class="setting-item">
+                  <label class="setting-label">
+                    <input type="radio" name="theme" value="light" />
+                    <span class="radio-custom"></span>
+                    Light Mode
+                  </label>
+                </div>
+                <div class="setting-item">
+                  <label class="setting-label">
+                    <input type="radio" name="theme" value="dark" />
+                    <span class="radio-custom"></span>
+                    Dark Mode
+                  </label>
+                </div>
+              </div>
+            </div>
+
+            <!-- Location Settings -->
+            <div class="settings-section fade-in">
+              <div class="settings-header-section">
+                <h2 class="settings-title">
+                  <i class="fas fa-map-marker-alt"></i>
+                  Location
+                </h2>
+              </div>
+              <div class="settings-content-section">
+                <div class="setting-item">
+                  <label class="setting-toggle">
+                    Auto-detect Location
+                    <input type="checkbox" id="autoLocation" checked />
+                    <span class="toggle-slider"></span>
+                  </label>
+                </div>
+                <div class="setting-item">
+                  <button
+                    class="settings-btn"
+                    onclick="weatherDashboard.getCurrentLocation()"
+                  >
+                    <i class="fas fa-location-arrow"></i>
+                    Update Current Location
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Data Settings -->
+            <div class="settings-section fade-in">
+              <div class="settings-header-section">
+                <h2 class="settings-title">
+                  <i class="fas fa-database"></i>
+                  Data Management
+                </h2>
+              </div>
+              <div class="settings-content-section">
+                <div class="setting-item">
+                  <button class="settings-btn" onclick="clearRecentSearches()">
+                    <i class="fas fa-trash"></i>
+                    Clear Recent Searches
+                  </button>
+                </div>
+                <div class="setting-item">
+                  <button class="settings-btn danger" onclick="clearAllData()">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    Clear All Data
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <!-- About Settings -->
+            <div class="settings-section fade-in">
+              <div class="settings-header-section">
+                <h2 class="settings-title">
+                  <i class="fas fa-info-circle"></i>
+                  About
+                </h2>
+              </div>
+              <div class="settings-content-section">
+                <div class="setting-item">
+                  <span class="setting-info">
+                    <strong>WeatherVibe</strong><br />
+                    Version 1.0.0<br />
+                    Built with ❤️ for weather enthusiasts
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Rain Animation Container -->
+    <div class="rain-animation" id="rainAnimation"></div>
+
+    <!-- Chatbot Container -->
+    <div class="chatbot-container" id="chatbotContainer">
+      <div class="chatbot-header">
+        <div class="chatbot-title">
+          <i class="fas fa-robot"></i>
+          <span>Weather Assistant</span>
+        </div>
+        <button class="chatbot-close" onclick="toggleChatbot()">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+      <div class="chatbot-messages" id="chatbotMessages">
+        <div class="bot-message">
+          <div class="message-avatar">
+            <i class="fas fa-robot"></i>
+          </div>
+          <div class="message-content">
+            Hello! I'm your weather assistant. Ask me anything about weather,
+            forecasts, or climate!
+          </div>
+        </div>
+      </div>
+      <div class="chatbot-input">
+        <input
+          type="text"
+          id="chatInput"
+          placeholder="Ask me about weather..."
+        />
+        <button onclick="sendMessage()">
+          <i class="fas fa-paper-plane"></i>
+        </button>
+      </div>
+    </div>
+
+    <!-- Chatbot Toggle Button -->
+    <button class="chatbot-toggle" id="chatbotToggle" onclick="toggleChatbot()">
+      <i class="fas fa-robot"></i>
+    </button>
+
+    <!-- Add Location Dialog -->
+    <div class="modal" id="add-location-modal">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h2 class="modal-title">Add New Location</h2>
+          <button class="modal-close">
+            <i class="fas fa-times"></i>
+          </button>
+        </div>
+        <div class="modal-body">
+          <input
+            type="text"
+            id="location-search"
+            placeholder="Search for a city..."
+            class="search-input"
+          />
+          
+          <!-- Recent Searches Chips -->
+          <div class="recent-searches-section" style="margin-top: 1rem;">
+            <h4 style="color: white; margin-bottom: 0.5rem; font-size: 0.9rem;">Recent Searches</h4>
+            <div class="recent-chips" id="recent-chips">
+              <!-- Recent search chips will be populated here -->
+            </div>
+          </div>
+          
+          <!-- Search Results -->
+          <div class="search-results" id="location-search-results">
+            <!-- Search results will appear here -->
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button class="modal-btn secondary" id="cancel-location">
+            Cancel
+          </button>
+          <button class="modal-btn primary" id="add-location" disabled>Add Location</button>
+        </div>
+      </div>
+    </div>
+
+    <script src="script.js"></script>
+  </body>
+</html>
