@@ -6,14 +6,14 @@ A modern, feature-rich weather application with stunning glassmorphism design, r
 
 ## ✨ Features
 
-### 🎨 **Modern UI/UX Design**
+### **Modern UI/UX Design**
 - **Glassmorphism Cards**: Beautiful frosted glass effect with backdrop blur
 - **Dynamic Backgrounds**: Time-based background images (morning, day, evening, night)
 - **Responsive Design**: Fully mobile-responsive with elegant hamburger menu
 - **Smooth Animations**: Lottie weather animations and CSS transitions
 - **Adaptive Theming**: Automatic day/night color schemes for optimal visibility
 
-### 🌍 **Weather Data & Forecasting**
+### **Weather Data & Forecasting**
 - **Real-time Weather**: Current conditions with live updates
 - **10-Day Forecast**: Extended weather predictions
 - **24-Hour Forecast**: Hourly weather details
@@ -21,27 +21,27 @@ A modern, feature-rich weather application with stunning glassmorphism design, r
 - **Geolocation Support**: Auto-detect current location
 - **Air Quality Index**: PM2.5, PM10, O3 levels with health indicators
 
-### 📊 **Analytics & Visualization**
+### **Analytics & Visualization**
 - **Interactive Charts**: Temperature, humidity, pressure trends using Chart.js
 - **Mini Charts**: Real-time weather metric visualizations
 - **UV Index Tracking**: Sun exposure monitoring
 - **Wind Analysis**: Speed and direction data with historical trends
 - **Pressure Monitoring**: Atmospheric pressure changes over time
 
-### 🗺️ **Interactive Maps**
+### **Interactive Maps**
 - **Quick Location Picker**: Click anywhere on map for instant weather
 - **Weather Map Integration**: Leaflet.js powered interactive maps
 - **Location Search**: Intelligent city search with autocomplete
 - **Recent Searches**: Quick access to previously searched locations
 
-### 🤖 **AI Weather Assistant**
+### **AI Weather Assistant**
 - **Smart Chatbot**: Powered by Google Gemini AI
 - **Real Weather Queries**: Ask "Current weather in Lahore?" for live data
 - **Natural Language**: Understands weather questions in plain English
 - **Context Aware**: Provides detailed weather information with emojis
 - **Mobile Optimized**: Bottom sheet design on mobile devices
 
-### 📱 **Mobile Experience**
+### **Mobile Experience**
 - **Hamburger Menu**: Smooth slide-in navigation
 - **Touch Optimized**: Large touch targets and smooth scrolling
 - **Horizontal Forecast**: Swipeable forecast cards on mobile
